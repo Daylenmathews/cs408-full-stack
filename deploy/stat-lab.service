@@ -4,6 +4,7 @@ Description=Stat Lab Django Application
 After=network.target
 
 [Service]
+EnvironmentFile=/etc/stat-lab/environment
 User=ubuntu
 Group=ubuntu
 WorkingDirectory=/home/ubuntu/stat-lab
