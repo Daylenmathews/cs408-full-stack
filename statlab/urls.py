@@ -14,28 +14,42 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.http import HttpResponse
-from django.urls import path
 
-def home(request):
-    return HttpResponse("""
-        <html>
-            <head>
-                <title>Stat Lab</title>
-            </head>
-            <body style="text-align:center; font-family:Arial; margin-top:100px;">
-                <h1>Hello World!</h1>
-                <h2>Welcome to Stat Lab</h2>
-                <p>Sports Statistics and Analysis</p>
-            </body>
-        </html>
-    """)
+from django.contrib import admin
+from django.urls import path
+from core import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
 
-    path('admin/', admin.site.urls),
-    path('', home),
-    
-]
 
+    path('admin/', admin.site.urls),
+
+    path('', views.home, name='home'),
+
+    path('dashboard/', views.dashboard, name='dashboard'),
+
+    path('accounts/register/', views.register, name='register'),
+
+    path(
+
+        'accounts/login/',
+        auth_views.LoginView.as_view(
+            template_name='core/login.html'
+        ),
+
+        name='login'
+
+
+    ),
+
+    path(
+        'accounts/logout/',
+
+
+        auth_views.LogoutView.as_view(),
+
+        
+        name='logout'
+    ),
+]
