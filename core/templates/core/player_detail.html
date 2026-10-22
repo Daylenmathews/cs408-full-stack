@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{ player.name }} - Stat Lab</title>
+
+    <style>
+
+
+        body {
+
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f6f8;
+        }
+        .container {
+
+            max-width: 900px;
+            margin: auto;
+
+
+        }
+        .card {
+
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+        }
+        a {
+
+            color: #1769aa;
+
+        }
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+        }
+        th, td {
+
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+
+            text-align: left;
+
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="container">
+
+        <a href="{% url 'players' %}">Back to Players</a>
+
+        <div class="card">
+            <h1>{{ player.name }}</h1>
+
+            <p><strong>Team:</strong> {{ player.team.name }}</p>
+            <p><strong>Position:</strong> {{ player.position }}</p>
+            <p><strong>Jersey Number:</strong>
+
+                {{ player.jersey_number|default_if_none:"N/A" }}
+            </p>
+
+            <h2>Season Statistics</h2>
+
+            <table>
+
+                <tr>
+                    <th>Season</th>
+                    <th>Games</th>
+                    <th>Passing</th>
+                    <th>Rushing</th>
+                    <th>Receiving</th>
+                    <th>TDs</th>
+
+
+                </tr>
+
+                {% for stat in stats %}
+
+                <tr>
+                    <td>{{ stat.season }}</td>
+                    <td>{{ stat.games_played }}</td>
+                    <td>{{ stat.passing_yards }}</td>
+                    <td>{{ stat.rushing_yards }}</td>
+                    <td>{{ stat.receiving_yards }}</td>
+                    <td>{{ stat.touchdowns }}</td>
+
+
+                </tr>
+                {% empty %}
+
+                <tr>
+
+                    <td colspan="6">No statistics available yet.</td>
+                </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+    </div>
+    
+</body>
+
+
+
+</html>

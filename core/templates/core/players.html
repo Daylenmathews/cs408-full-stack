@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NFL Players - Stat Lab</title>
+
+    <style>
+        body {
+
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f6f8;
+
+
+
+        }
+        .container {
+
+            max-width: 900px;
+            margin: auto;
+        }
+
+
+        input {
+
+
+            padding: 12px;
+            width: 65%;
+
+
+
+        }
+        button {
+
+
+            padding: 12px;
+            cursor: pointer;
+
+        }
+        .player {
+
+            background: white;
+            padding: 15px;
+            margin-top: 10px;
+            border-radius: 8px;
+        }
+        a {
+            color: #1769aa;
+            text-decoration: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+
+        <h1>Stat Lab - NFL Players</h1>
+
+        <a href="/">Home</a>
+
+        <h2>Search Players</h2>
+
+        <form method="GET">
+
+            <input type="text" name="q"
+                   placeholder="Search by player name"
+                   value="{{ query }}">
+            <button type="submit">Search</button>
+
+
+        </form>
+
+        <h2>Player List</h2>
+
+        {% for player in players %}
+
+            <div class="player">
+                <h3>
+                    <a href="{% url 'player_detail' player.id %}">
+                        {{ player.name }}
+                    </a>
+                </h3>
+
+                <p>Team: {{ player.team.name }}</p>
+                <p>Position: {{ player.position }}</p>
+            </div>
+
+        {% empty %}
+
+            <p>No players found.</p>
+        {% endfor %}
+    </div>
+
+</body>
+
+
+
+</html>

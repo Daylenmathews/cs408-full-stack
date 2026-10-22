@@ -29,6 +29,10 @@ urlpatterns = [
 
     path('dashboard/', views.dashboard, name='dashboard'),
 
+    path('players/', views.players, name='players'),
+
+    path('players/<int:player_id>/', views.player_detail, name='player_detail'),
+
     path('accounts/register/', views.register, name='register'),
 
     path(
