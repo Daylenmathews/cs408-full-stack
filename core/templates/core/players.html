@@ -1,104 +1,279 @@
+
 <!DOCTYPE html>
+
+
 
 <html lang="en">
 
 <head>
 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>NFL Players - Stat Lab</title>
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+
+          rel="stylesheet">
+
     <style>
+
+
+
         body {
 
-            font-family: Arial, sans-serif;
-            margin: 40px;
             background: #f4f6f8;
 
-
-
         }
+
         .container {
 
-            max-width: 900px;
-            margin: auto;
+            max-width: 1100px;
         }
 
+        .player-card {
 
-        input {
-
-
-            padding: 12px;
-            width: 65%;
-
-
-
-        }
-        button {
-
-
-            padding: 12px;
-            cursor: pointer;
-
-        }
-        .player {
 
             background: white;
-            padding: 15px;
-            margin-top: 10px;
-            border-radius: 8px;
+            border-radius: 10px;
+            padding: 20px;
+
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
-        a {
-            color: #1769aa;
-            text-decoration: none;
+
+        .filter-box {
+
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+
+
         }
+
 
     </style>
 
 </head>
 
 <body>
-    <div class="container">
 
-        <h1>Stat Lab - NFL Players</h1>
 
-        <a href="/">Home</a>
+<div class="container py-5">
 
-        <h2>Search Players</h2>
+    <h1 class="mb-3">Stat Lab - NFL Players</h1>
 
-        <form method="GET">
+    <a href="{% url 'home' %}" class="btn btn-outline-primary mb-4">
 
-            <input type="text" name="q"
-                   placeholder="Search by player name"
-                   value="{{ query }}">
-            <button type="submit">Search</button>
+        Home
+    </a>
 
+    <div class="filter-box">
+
+
+        <h3>Search and Filter Players</h3>
+
+        <form method="GET" action="{% url 'players' %}">
+
+
+            <div class="row g-3">
+
+                <div class="col-md-6">
+
+                    <label class="form-label">Player Name</label>
+
+                    <input type="text" name="q"
+                           class="form-control"
+                           placeholder="Search player name"
+                           value="{{ query }}">
+
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label">Team</label>
+                    <select name="team" class="form-select">
+
+                        <option value="">All Teams</option>
+                        {% for team in teams %}
+
+                        <option value="{{ team.abbreviation }}"
+
+
+                            {% if selected_team == team.abbreviation %}selected{% endif %}>
+                            {{ team.name }}
+
+                        </option>
+
+                        {% endfor %}
+                    </select>
+
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label">Position</label>
+                    <select name="position" class="form-select">
+                        <option value="">All Positions</option>
+                        {% for position in positions %}
+                        <option value="{{ position }}"
+                            {% if selected_position == position %}selected{% endif %}>
+                            {{ position }}
+
+                        </option>
+
+                        {% endfor %}
+
+
+                    </select>
+
+
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label">Season</label>
+
+                    <select name="season" class="form-select">
+
+
+                        <option value="">All Seasons</option>
+                        {% for season in seasons %}
+                        <option value="{{ season }}"
+                            {% if selected_season == season|stringformat:"s" %}selected{% endif %}>
+                            {{ season }}
+
+                        </option>
+
+                        {% endfor %}
+
+                    </select>
+
+
+                </div>
+
+                <div class="col-md-6">
+
+
+                    <label class="form-label">Statistic</label>
+
+                    <select name="stat_type" class="form-select">
+                        <option value="">Any Statistic</option>
+
+                        <option value="passing_yards"
+                            {% if selected_stat_type == 'passing_yards' %}selected{% endif %}>
+                            Passing Yards
+                        </option>
+
+                        <option value="rushing_yards"
+                            {% if selected_stat_type == 'rushing_yards' %}selected{% endif %}>
+                            Rushing Yards
+                        </option>
+
+                        <option value="receiving_yards"
+                            {% if selected_stat_type == 'receiving_yards' %}selected{% endif %}>
+                            Receiving Yards
+                        </option>
+
+                        <option value="touchdowns"
+                            {% if selected_stat_type == 'touchdowns' %}selected{% endif %}>
+                            Touchdowns
+                        </option>
+
+                        <option value="games_played"
+                            {% if selected_stat_type == 'games_played' %}selected{% endif %}>
+                            Games Played
+
+                        </option>
+
+
+                    </select>
+
+
+                </div>
+
+                <div class="col-md-6">
+
+                    <label class="form-label">Minimum Statistical Value</label>
+
+                    <input type="number" name="min_stat"
+
+                           class="form-control"
+                           min="0"
+                           placeholder="Example: 500"
+                           value="{{ min_stat }}">
+
+
+                </div>
+
+                <div class="col-12">
+
+                    <button type="submit" class="btn btn-primary">
+
+
+                        Apply Filters
+
+
+                    </button>
+
+                    <a href="{% url 'players' %}"
+
+
+                       class="btn btn-secondary">
+
+
+                        Clear Filters
+                    </a>
+                </div>
+
+            </div>
 
         </form>
 
-        <h2>Player List</h2>
-
-        {% for player in players %}
-
-            <div class="player">
-                <h3>
-                    <a href="{% url 'player_detail' player.id %}">
-                        {{ player.name }}
-                    </a>
-                </h3>
-
-                <p>Team: {{ player.team.name }}</p>
-                <p>Position: {{ player.position }}</p>
-            </div>
-
-        {% empty %}
-
-            <p>No players found.</p>
-        {% endfor %}
     </div>
 
+    <h2 class="mb-3">Player Results</h2>
+
+    <p>{{ players|length }} player(s) found</p>
+
+    {% for player in players %}
+
+    <div class="player-card">
+
+        <h4>
+
+            <a href="{% url 'player_detail' player.id %}">
+
+                {{ player.name }}
+
+            </a>
+        </h4>
+
+        <p class="mb-1">
+
+            <strong>Team:</strong> {{ player.team.name }}
+        </p>
+
+        <p class="mb-0">
+            <strong>Position:</strong> {{ player.position }}
+        </p>
+    </div>
+
+    {% empty %}
+
+    <div class="alert alert-warning">
+        No players found matching your filters.
+    </div>
+    {% endfor %}
+
+</div>
+
+
 </body>
-
-
 
 </html>
