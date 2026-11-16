@@ -128,45 +128,53 @@ class Command(BaseCommand):
                     record_season = record.get("season", {}).get("year")
 
                     if str(record_season) != str(season):
+
+
                         continue
 
-                    # Only use statistics earned with Seattle.
                     if str(record.get("teamId")) != "26":
+
                         continue
 
                     found_season = True
 
                     for stat_name, stat_value in zip(
 
-
                         names, record.get("stats", [])
 
-                    ):
 
+
+                    ):
                         number = get_number(stat_value)
 
-                    if stat_name == "gamesPlayed":
-                         values[stat_name] = max(
-                            values.get(stat_name, 0),
-                            number
-                        )
-                    else:
-                        values[stat_name] = number
+                        if stat_name == "gamesPlayed":
+
+                            values[stat_name] = max(
+                                values.get(stat_name, 0),
+                                number
+                            )
+
+                        else:
+
+                            values[stat_name] = number
 
             if not found_season:
+
+
 
                 skipped += 1
                 continue
 
-            # Combine passing, rushing and receiving touchdowns.
             touchdowns = (
-
 
                 values.get("passingTouchdowns", 0)
                 + values.get("rushingTouchdowns", 0)
                 + values.get("receivingTouchdowns", 0)
 
+                
             )
+
+
 
             PlayerStat.objects.update_or_create(
 

@@ -1,7 +1,5 @@
 from django.db import models
 
-# Create your models here.
-
 class Team(models.Model):
 
 
@@ -79,3 +77,51 @@ class PlayerStat(models.Model):
                 
             )
         ]
+
+
+from django.conf import settings
+
+class Favorite(models.Model):
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+
+            models.UniqueConstraint(
+
+                fields=['user', 'player'],
+                name='unique_user_favorite'
+
+            )
+
+        ]
+
+
+class Rating(models.Model):
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+
+    score = models.IntegerField()
+
+    class Meta:
+        constraints = [
+
+            models.UniqueConstraint(
+
+                fields=['user', 'player'],
+                name='unique_user_rating'
+
+            )
+
+        ]
+
+
+class Comment(models.Model):
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

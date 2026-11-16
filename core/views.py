@@ -4,7 +4,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.db.models import Q
-from core.models import Player, Team, PlayerStat
+from core.models import Player, Team, PlayerStat, Favorite, Rating, Comment
+from django.db.models import Avg
+from django.views.decorators.http import require_POST
 
 
 def home(request):
@@ -69,7 +71,7 @@ def players(request):
 
         player_list = player_list.filter(position=position)
 
-    # Only allow supported statistical fields.
+    # Only allow supported statistical fields
     stat_fields = {
 
         'passing_yards': 'passing_yards',
@@ -96,6 +98,7 @@ def players(request):
         try:
             stat_filters[f'stats__{stat_fields[stat_type]}__gte'] = int(min_stat)
         except ValueError:
+
             player_list = player_list.none()
 
     if stat_filters:
@@ -119,11 +122,16 @@ def players(request):
     )
     seasons = (
         PlayerStat.objects.order_by('-season')
+
         .values_list('season', flat=True)
         .distinct()
+
+
+
     )
 
     return render(request, 'core/players.html', {
+
         'players': player_list,
         'query': query,
         'selected_team': team,
@@ -134,25 +142,164 @@ def players(request):
         'teams': teams,
         'positions': positions,
         'seasons': seasons,
+
     })
 
 
 
+
 def player_detail(request, player_id):
-    player = get_object_or_404(
 
-
-        Player.objects.select_related('team'),
-        id=player_id
-    )
+    player = get_object_or_404(Player, id=player_id)
 
     stats = player.stats.all().order_by('-season')
 
+    comments = Comment.objects.filter(
+
+        player=player
+
+
+    ).select_related('user').order_by('-created_at')
+
+    average_rating = Rating.objects.filter(
+
+        player=player
+    ).aggregate(Avg('score'))['score__avg']
+
+    is_favorite = False
+    user_rating = None
+
+    if request.user.is_authenticated:
+
+
+        is_favorite = Favorite.objects.filter(
+            user=request.user,
+            player=player
+
+        ).exists()
+
+        rating = Rating.objects.filter(
+
+            user=request.user,
+            player=player
+
+        ).first()
+
+        if rating:
+            user_rating = rating.score
+
     return render(request, 'core/player_detail.html', {
-
         'player': player,
-
         'stats': stats,
+        'comments': comments,
+        'average_rating': average_rating,
+        'is_favorite': is_favorite,
+        'user_rating': user_rating,
+    })
 
-        
+
+@login_required
+@require_POST
+
+def toggle_favorite(request, player_id):
+    player = get_object_or_404(Player, id=player_id)
+
+    favorite, created = Favorite.objects.get_or_create(
+        user=request.user,
+
+        player=player
+
+    )
+
+
+    if not created:
+
+        favorite.delete()
+
+    return redirect('player_detail', player_id=player.id)
+
+
+@login_required
+@require_POST
+def rate_player(request, player_id):
+    player = get_object_or_404(Player, id=player_id)
+
+    try:
+        score = int(request.POST.get('score', 0))
+
+    except (ValueError, TypeError):
+
+        score = 0
+
+    if 1 <= score <= 5:
+        Rating.objects.update_or_create(
+
+            user=request.user,
+            player=player,
+
+            defaults={'score': score}
+
+        )
+
+    return redirect('player_detail', player_id=player.id)
+
+
+@login_required
+@require_POST
+
+def add_comment(request, player_id):
+
+    player = get_object_or_404(Player, id=player_id)
+
+    text = request.POST.get('text', '').strip()
+
+    if text:
+        Comment.objects.create(
+
+            user=request.user,
+            player=player,
+
+            text=text
+        )
+
+    return redirect('player_detail', player_id=player.id)
+
+
+@login_required
+
+def favorites(request):
+    saved_players = Favorite.objects.filter(
+
+        user=request.user
+
+    ).select_related('player', 'player__team')
+
+    return render(request, 'core/favorites.html', {
+
+        'favorites': saved_players
+
+    })
+
+
+def rankings(request):
+
+    players = Player.objects.annotate(
+
+
+        average_rating=Avg('rating__score')
+
+    ).filter(
+
+        average_rating__isnull=False
+
+    ).order_by('-average_rating', 'name')
+
+
+
+    return render(request, 'core/rankings.html', {
+
+        'players': players
+
+
+
     })

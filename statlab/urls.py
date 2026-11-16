@@ -22,6 +22,8 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
 
+    path('favorites/', views.favorites, name='favorites'),
+    path('rankings/', views.rankings, name='rankings'),
 
     path('admin/', admin.site.urls),
 
@@ -32,6 +34,10 @@ urlpatterns = [
     path('players/', views.players, name='players'),
 
     path('players/<int:player_id>/', views.player_detail, name='player_detail'),
+    path('players/<int:player_id>/favorite/', views.toggle_favorite, name='toggle_favorite'),
+    path('players/<int:player_id>/rate/', views.rate_player, name='rate_player'),
+    path('players/<int:player_id>/comment/', views.add_comment, name='add_comment'),
+
 
     path('accounts/register/', views.register, name='register'),
 
