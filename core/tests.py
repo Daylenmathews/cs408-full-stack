@@ -167,3 +167,187 @@ class PlayerSearchTests(TestCase):
         )
         self.assertEqual(len(response.context["players"]), 0)
 
+
+from django.contrib.auth import get_user_model
+from core.models import Favorite, Rating, Comment
+
+
+class AccountAndFeatureTests(TestCase):
+
+    def setUp(self):
+
+        self.user = get_user_model().objects.create_user(
+
+            username="testuser",
+            password="TestPassword123!"
+
+        )
+
+        self.team = Team.objects.create(
+
+            name="Seattle Seahawks",
+            abbreviation="SEA",
+            conference="NFC",
+            division="West"
+
+        )
+
+        self.player = Player.objects.create(
+
+            name="Jaxon Smith-Njigba",
+            team=self.team,
+
+            position="WR"
+
+
+        )
+
+    def test_registration_page_loads(self):
+
+        response = self.client.get(reverse("register"))
+        self.assertEqual(response.status_code, 200)
+
+
+    def test_user_registration(self):
+
+        response = self.client.post(reverse("register"), {
+
+            "username": "newuser",
+            "password1": "SecurePassword123!",
+            "password2": "SecurePassword123!"
+
+        })
+
+        self.assertRedirects(response, reverse("dashboard"))
+        self.assertTrue(
+
+            get_user_model().objects.filter(username="newuser").exists()
+
+        )
+
+    def test_dashboard_requires_login(self):
+
+        response = self.client.get(reverse("dashboard"))
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_favorites_requires_login(self):
+
+        response = self.client.get(reverse("favorites"))
+        self.assertEqual(response.status_code, 302)
+
+    def test_add_favorite(self):
+
+        self.client.force_login(self.user)
+        self.client.post(
+            reverse("toggle_favorite", args=[self.player.id])
+
+        )
+        self.assertTrue(
+
+            Favorite.objects.filter(
+
+                user=self.user, player=self.player
+
+            ).exists()
+
+
+        )
+
+    def test_remove_favorite(self):
+
+        self.client.force_login(self.user)
+
+        Favorite.objects.create(user=self.user, player=self.player)
+
+        self.client.post(
+
+            reverse("toggle_favorite", args=[self.player.id])
+
+
+        )
+
+        self.assertFalse(
+
+            Favorite.objects.filter(
+
+
+                user=self.user, player=self.player
+
+            ).exists()
+
+
+        )
+
+    def test_rate_player(self):
+
+        self.client.force_login(self.user)
+
+        self.client.post(
+
+            reverse("rate_player", args=[self.player.id]),
+
+            {"score": 5}
+
+
+        )
+        self.assertEqual(
+            Rating.objects.get(
+
+                user=self.user, player=self.player
+
+            ).score,
+
+            5
+        )
+
+    def test_invalid_rating(self):
+        self.client.force_login(self.user)
+        self.client.post(
+
+            reverse("rate_player", args=[self.player.id]),
+
+            {"score": 10}
+
+        )
+        self.assertFalse(
+            Rating.objects.filter(
+
+                user=self.user, player=self.player
+
+            ).exists()
+        )
+
+    def test_add_comment(self):
+        self.client.force_login(self.user)
+        self.client.post(
+
+            reverse("add_comment", args=[self.player.id]),
+            
+            {"text": "Great player!"}
+        )
+
+        self.assertTrue(
+
+            Comment.objects.filter(
+
+                user=self.user,
+                player=self.player,
+
+                text="Great player!"
+
+            ).exists()
+
+        )
+
+    def test_empty_comment(self):
+
+        self.client.force_login(self.user)
+        self.client.post(
+
+            reverse("add_comment", args=[self.player.id]),
+
+            {"text": "   "}
+            
+        )
+        self.assertEqual(Comment.objects.count(), 0)
